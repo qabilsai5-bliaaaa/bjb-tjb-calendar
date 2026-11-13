@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-тоқсан БЖБ / ТЖБ Күнтізбесі</title>
+    <!-- Tailwind CSS жүктеу -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter шрифті -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen antialiased">
+
+    <!-- Негізгі контейнер -->
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Жоғарғы тақырып және басқару батырмалары -->
+        <header class="mb-6 sm:mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-200 pb-5">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">БЖБ және ТЖБ Күнтізбесі (2026)</h1>
+                <p class="text-slate-500 text-sm mt-1">Барлық 19 жұмыс енгізілді. Күнтізбеге жүктеп алыңыз немесе жаңасын қосыңыз.</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button onclick="downloadICS()" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-2 cursor-pointer">
+                    <span>📥 Барлығын күнтізбеге жүктеу (.ics)</span>
+                </button>
+                <button onclick="resetToDefault()" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer">
+                    Бастапқы кестені қайтару
+                </button>
+                <button onclick="openClearModal()" class="bg-white border border-slate-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-600 px-3.5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer">
+                    Тазалау
+                </button>
+            </div>
+        </header>
+
+        <!-- Негізгі тор (Сол жақта форма, оң жақта күнтізбе мен тізім) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            
+            <!-- Сол жақ: Деректер енгізу формасы -->
+            <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h2 class="text-lg font-semibold mb-4 text-slate-900 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                    Жаңа БЖБ / ТЖБ қосу
+                </h2>
+                
+                <form id="bjbForm" class="space-y-4">
+                    <div>
+                        <label for="className" class="block text-sm font-medium text-slate-700 mb-1">Сынып</label>
+                        <input type="text" id="className" placeholder="Мысалы: 5-сынып, 7а, 8г" required
+                            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition">
+                    </div>
+
+                    <div>
+                        <label for="subjectName" class="block text-sm font-medium text-slate-700 mb-1">Жұмыс түрі (БЖБ / ТЖБ / Есеп)</label>
+                        <input type="text" id="subjectName" placeholder="Мысалы: 1-БЖБ, ТЖБ немесе Есеп" required
+                            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="bjbDate" class="block text-sm font-medium text-slate-700 mb-1">Күні</label>
+                            <input type="date" id="bjbDate" value="2026-11-19" required
+                                class="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition">
+                        </div>
+                        <div>
+                            <label for="bjbTime" class="block text-sm font-medium text-slate-700 mb-1">Басталу уақыты</label>
+                            <input type="time" id="bjbTime" value="08:30" required
+                                class="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="duration" class="block text-sm font-medium text-slate-700 mb-1">Ұзақтығы (минут)</label>
+                        <select id="duration" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white transition">
+                            <option value="20">20 минут (БЖБ)</option>
+                            <option value="25">25 минут</option>
+                            <option value="45" selected>45 минут (ТЖБ / толық сабақ)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 rounded-xl transition shadow-sm text-sm cursor-pointer">
+                        + Күнтізбеге қосу
+                    </button>
+                </form>
+
+                <!-- Түстер аңыз-белгісі -->
+                <div class="mt-6 pt-5 border-t border-slate-100">
+                    <p class="text-xs font-medium text-slate-500 mb-2.5">Белгілеу түстері:</p>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <span class="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-medium border border-blue-200">БЖБ</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-red-100 text-red-800 font-medium border border-red-200">ТЖБ</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-medium border border-amber-200">Есеп</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Оң жақ: Күнтізбе және Тізім -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Интерактивті айлық күнтізбе торы -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <h2 id="currentMonthYear" class="text-lg sm:text-xl font-bold text-slate-900 capitalize"></h2>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="setMonth(2026, 10)" id="btnNov" class="text-xs px-3 py-2 rounded-lg font-medium transition cursor-pointer">Қараша</button>
+                            <button onclick="setMonth(2026, 11)" id="btnDec" class="text-xs px-3 py-2 rounded-lg font-medium transition cursor-pointer">Желтоқсан</button>
+                            <div class="w-px h-5 bg-slate-200 mx-1"></div>
+                            <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition cursor-pointer" title="Алдыңғы ай">◀</button>
+                            <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition cursor-pointer" title="Келесі ай">▶</button>
+                        </div>
+                    </div>
+
+                    <!-- Апта күндері -->
+                    <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-400 mb-2">
+                        <div>Дс</div><div>Сс</div><div>Ср</div><div>Бс</div><div>Жм</div><div>Сн</div><div>Жк</div>
+                    </div>
+                    
+                    <!-- Күндер ұяшықтары -->
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-sm"></div>
+                </div>
+
+                <!-- Енгізілген жұмыстар тізімі -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-slate-900">
+                            Жоспарланған кесте <span class="ml-1.5 text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full" id="countBadge">0</span>
+                        </h2>
+                    </div>
+                    <div id="bjbList" class="space-y-2.5"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Хабарлама (Toast) -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <span id="toastIcon">✅</span>
+        <span id="toastMsg">Сақталды</span>
+    </div>
+
+    <!-- Растау модаль терезесі (alert/confirm орнына) -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-900">Кестені тазалау</h3>
+            <p class="text-sm text-slate-600 mt-2">Барлық енгізілген БЖБ және ТЖБ кестесін өшіруді растайсыз ба?</p>
+            <div class="mt-5 flex justify-end gap-2.5">
+                <button onclick="closeClearModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">Бас тарту</button>
+                <button onclick="confirmClearAll()" class="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition cursor-pointer">Иә, өшіру</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 19 бастапқы БЖБ/ТЖБ/Есеп оқиғалары
+        const defaultSchedule = [
+            { id: 1, className: '8а', subjectName: '1-БЖБ', date: '2026-11-19', time: '08:30', duration: 20 },
+            { id: 2, className: '9г', subjectName: 'БЖБ', date: '2026-11-25', time: '08:30', duration: 20 },
+            { id: 3, className: '5-сынып', subjectName: '1-БЖБ', date: '2026-11-30', time: '08:30', duration: 20 },
+            { id: 4, className: '9а', subjectName: '1-БЖБ', date: '2026-12-01', time: '08:30', duration: 20 },
+            { id: 5, className: '7а', subjectName: '1-БЖБ', date: '2026-12-03', time: '08:30', duration: 20 },
+            { id: 6, className: '10а', subjectName: 'БЖБ', date: '2026-12-04', time: '08:30', duration: 20 },
+            { id: 7, className: '7г', subjectName: 'БЖБ', date: '2026-12-09', time: '08:30', duration: 20 },
+            { id: 8, className: '9а', subjectName: '2-БЖБ', date: '2026-12-14', time: '08:30', duration: 20 },
+            { id: 9, className: '7а', subjectName: '2-БЖБ', date: '2026-12-15', time: '08:30', duration: 20 },
+            { id: 10, className: '8а', subjectName: '2-БЖБ', date: '2026-12-15', time: '09:25', duration: 20 },
+            { id: 11, className: '5-сынып', subjectName: '2-БЖБ', date: '2026-12-18', time: '08:30', duration: 20 },
+            { id: 12, className: '10а', subjectName: 'Есеп', date: '2026-12-18', time: '09:25', duration: 45 },
+            { id: 13, className: '7а', subjectName: 'ТЖБ', date: '2026-12-21', time: '08:30', duration: 45 },
+            { id: 14, className: '8а', subjectName: 'ТЖБ', date: '2026-12-21', time: '09:25', duration: 45 },
+            { id: 15, className: '9а', subjectName: 'ТЖБ', date: '2026-12-21', time: '10:20', duration: 45 },
+            { id: 16, className: '5-сынып', subjectName: 'ТЖБ', date: '2026-12-22', time: '08:30', duration: 45 },
+            { id: 17, className: '10а', subjectName: 'ТЖБ', date: '2026-12-22', time: '09:25', duration: 45 },
+            { id: 18, className: '8г', subjectName: 'БЖБ', date: '2026-12-23', time: '08:30', duration: 20 },
+            { id: 19, className: '10г', subjectName: 'БЖБ', date: '2026-12-23', time: '09:25', duration: 20 }
+        ];
+
+        // LocalStorage-дан деректерді жүктеу
+        let events = [];
+        try {
+            const saved = localStorage.getItem('bjb_events_2026_v1');
+            events = saved ? JSON.parse(saved) : [...defaultSchedule];
+        } catch (err) {
+            events = [...defaultSchedule];
+        }
+
+        // Бастапқы ай: Қараша 2026 (ай индексі 10)
+        let currentDate = new Date(2026, 10, 1);
+
+        // Хабарлама көрсету функциясы
+        function showToast(message, icon = '✅') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = message;
+            document.getElementById('toastIcon').textContent = icon;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Жаңа оқиға қосу
+        document.getElementById('bjbForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const className = document.getElementById('className').value.trim();
+            const subjectName = document.getElementById('subjectName').value.trim();
+            const date = document.getElementById('bjbDate').value;
+            const time = document.getElementById('bjbTime').value;
+            const duration = parseInt(document.getElementById('duration').value, 10);
+
+            if (!className || !subjectName || !date || !time) return;
+
+            const newEvent = {
+                id: Date.now(),
+                className,
+                subjectName,
+                date,
+                time,
+                duration
+            };
+
+            events.push(newEvent);
+            sortEvents();
+            
+            // Қосылған күннің айына ауысу
+            const [y, m] = date.split('-').map(Number);
+            currentDate = new Date(y, m - 1, 1);
+
+            saveAndRender();
+            document.getElementById('subjectName').value = '';
+            showToast(`${className} — ${subjectName} күнтізбеге қосылды`);
+        });
+
+        // Хронологиялық ретпен сұрыптау
+        function sortEvents() {
+            events.sort((a, b) => {
+                const dtA = `${a.date}T${a.time}`;
+                const dtB = `${b.date}T${b.time}`;
+                return dtA.localeCompare(dtB);
+            });
+        }
+
+        // Жеке оқиғаны өшіру
+        function deleteEvent(id) {
+            events = events.filter(ev => ev.id !== id);
+            saveAndRender();
+            showToast('Жазба өшірілді', '🗑️');
+        }
+
+        // Бастапқы 19 кестені қайтару
+        function resetToDefault() {
+            events = [...defaultSchedule];
+            sortEvents();
+            currentDate = new Date(2026, 10, 1);
+            saveAndRender();
+            showToast('Бастапқы 19 кесте қалпына келтірілді');
+        }
+
+        // Модаль терезені басқару
+        function openClearModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeClearModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmClearAll() {
+            events = [];
+            saveAndRender();
+            closeClearModal();
+            showToast('Кесте толық тазаланды', '🧹');
+        }
+
+        // Сақтау және интерфейсті жаңарту
+        function saveAndRender() {
+            try {
+                localStorage.setItem('bjb_events_2026_v1', JSON.stringify(events));
+            } catch (e) {
+                console.warn('LocalStorage қолжетімсіз');
+            }
+            sortEvents();
+            renderList();
+            renderCalendar();
+        }
+
+        // Түстерді анықтау (БЖБ - көк, ТЖБ - қызыл, Есеп - сары)
+        function getBadgeColor(type) {
+            const t = type.toLowerCase();
+            if (t.includes('тжб') || t.includes('tjb')) return 'bg-red-100 text-red-800 border-red-200';
+            if (t.includes('есеп') || t.includes('esep')) return 'bg-amber-100 text-amber-800 border-amber-200';
+            return 'bg-blue-100 text-blue-800 border-blue-200';
+        }
+
+        function getTagBg(type) {
+            const t = type.toLowerCase();
+            if (t.includes('тжб') || t.includes('tjb')) return 'bg-red-600 text-white';
+            if (t.includes('есеп') || t.includes('esep')) return 'bg-amber-500 text-white';
+            return 'bg-blue-600 text-white';
+        }
+
+        // Google Calendar сілтемесін құрастыру
+        function getGoogleCalendarUrl(ev) {
+            const start = new Date(`${ev.date}T${ev.time}:00`);
+            const end = new Date(start.getTime() + ev.duration * 60000);
+            const formatGCal = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+            const title = encodeURIComponent(`${ev.className} — ${ev.subjectName}`);
+            const details = encodeURIComponent(`Сынып: ${ev.className}\nЖұмыс түрі: ${ev.subjectName}\nҰзақтығы: ${ev.duration} мин`);
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatGCal(start)}/${formatGCal(end)}&details=${details}`;
+        }
+
+        // Тізімді көрсету
+        function renderList() {
+            const listEl = document.getElementById('bjbList');
+            document.getElementById('countBadge').textContent = events.length;
+
+            if (events.length === 0) {
+                listEl.innerHTML = `<p class="text-slate-400 text-sm text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">Кесте бос. Сол жақтан жаңасын қосыңыз немесе «Бастапқы кестені қайтару» батырмасын басыңыз.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = events.map(ev => `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-blue-300 bg-slate-50/60 hover:bg-white transition gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg min-w-[74px] text-center shadow-2xs">${ev.className}</span>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-md border ${getBadgeColor(ev.subjectName)}">${ev.subjectName}</span>
+                                <span class="text-xs font-semibold text-slate-700">📅 ${ev.date.split('-').reverse().join('.')}</span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1">
+                                ⏰ ${ev.time} (${ev.duration} мин)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 self-end sm:self-center">
+                        <a href="${getGoogleCalendarUrl(ev)}" target="_blank" rel="noopener noreferrer"
+                           class="text-xs bg-white border border-slate-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 px-3 py-1.5 rounded-lg font-medium transition shadow-2xs">
+                            Google Calendar ↗
+                        </a>
+                        <button onclick="deleteEvent(${ev.id})" class="text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg text-sm transition cursor-pointer" title="Өшіру">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Айға жылдам ауысу
+        function setMonth(year, month) {
+            currentDate = new Date(year, month, 1);
+            renderCalendar();
+        }
+
+        function changeMonth(step) {
+            currentDate.setMonth(currentDate.getMonth() + step);
+            renderCalendar();
+        }
+
+        // Айлық күнтізбе торын салу
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('currentMonthYear');
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Белсенді ай батырмаларын ерекшелеу
+            const btnNov = document.getElementById('btnNov');
+            const btnDec = document.getElementById('btnDec');
+            btnNov.className = (year === 2026 && month === 10)
+                ? 'text-xs px-3 py-2 rounded-lg font-semibold bg-blue-600 text-white shadow-2xs cursor-pointer'
+                : 'text-xs px-3 py-2 rounded-lg font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer';
+            btnDec.className = (year === 2026 && month === 11)
+                ? 'text-xs px-3 py-2 rounded-lg font-semibold bg-blue-600 text-white shadow-2xs cursor-pointer'
+                : 'text-xs px-3 py-2 rounded-lg font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer';
+
+            const monthsKz = ['Қаңтар', 'Ақпан', 'Наурыз', 'Сәуір', 'Мамыр', 'Маусым', 'Шілде', 'Тамыз', 'Қыркүйек', 'Қазан', 'Қараша', 'Желтоқсан'];
+            monthLabel.textContent = `${monthsKz[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let html = '';
+            for (let i = 0; i < startOffset; i++) {
+                html += `<div class="min-h-[82px] bg-slate-50/60 rounded-xl border border-transparent"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayEvents = events.filter(e => e.date === dateStr);
+                const hasEvents = dayEvents.length > 0;
+
+                html += `
+                    <div class="min-h-[82px] p-1.5 rounded-xl border ${hasEvents ? 'border-slate-300 bg-slate-50/90 shadow-2xs' : 'border-slate-100 bg-white'} flex flex-col justify-between transition">
+                        <span class="text-xs font-semibold ${hasEvents ? 'text-slate-900' : 'text-slate-400'}">${day}</span>
+                        <div class="space-y-1 mt-1">
+                            ${dayEvents.map(e => `
+                                <div class="text-[10px] leading-tight ${getTagBg(e.subjectName)} px-1.5 py-0.5 rounded-md truncate font-medium" title="${e.className} — ${e.subjectName} (${e.time})">
+                                    ${e.className} (${e.subjectName})
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        // Барлық оқиғаларды .ics форматында жүктеу
+        function downloadICS() {
+            if (events.length === 0) {
+                showToast('Алдымен кем дегенде бір БЖБ қосыңыз', '⚠️');
+                return;
+            }
+
+            let icsLines = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//BJB TJB Scheduler//KZ",
+                "CALSCALE:GREGORIAN"
+            ];
+
+            events.forEach(ev => {
+                const start = new Date(`${ev.date}T${ev.time}:00`);
+                const end = new Date(start.getTime() + ev.duration * 60000);
+                const formatICS = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+                
+                icsLines.push("BEGIN:VEVENT");
+                icsLines.push(`UID:bjb-${ev.id}@school-kz`);
+                icsLines.push(`DTSTAMP:${formatICS(new Date())}`);
+                icsLines.push(`DTSTART:${formatICS(start)}`);
+                icsLines.push(`DTEND:${formatICS(end)}`);
+                icsLines.push(`SUMMARY:${ev.className} — ${ev.subjectName}`);
+                icsLines.push(`DESCRIPTION:Сынып: ${ev.className} | Жұмыс түрі: ${ev.subjectName} (${ev.duration} мин)`);
+                icsLines.push("END:VEVENT");
+            });
+
+            icsLines.push("END:VCALENDAR");
+
+            const blob = new Blob([icsLines.join("\r\n")], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '2_Toksan_BJB_TJB_2026.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('2_Toksan_BJB_TJB_2026.ics файлы жүктелді!');
+        }
+
+        // Бастапқы іске қосу
+        saveAndRender();
+    </script>
+</body>
+</html>
